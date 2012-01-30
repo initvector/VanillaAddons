@@ -31,7 +31,10 @@ class SteamProfilePlugin extends Gdn_Plugin {
    const SteamOpenIDClaimedID = 'http://steamcommunity.com/openid/id/';
 
    /**
+    * Hooks into the Render function to ensure we can serve up any
+    * Steam Profile notifications, even between page loads
     *
+    * @param Gdn_Controller $Sender
     */
    public function Base_Render_Before(&$Sender) {
       $CurrentNotification = $this->_SteamProfileNotification();
@@ -42,7 +45,9 @@ class SteamProfilePlugin extends Gdn_Plugin {
    }
 
    /**
-    *
+    * Verifies the authenticity of an OpenID authentication, returned from Steam
+    * 
+    * @param array $OpenIDParameters The GET parameters from the is_res submission
     */
    private function CheckAuthentication($OpenIDParameters) {
       // Grabbing the $_GET array, processed by our framework
@@ -89,6 +94,7 @@ class SteamProfilePlugin extends Gdn_Plugin {
       // Grabbing the $_GET array, processed by our framework
       $RequestGet = Gdn::Request()->Get();
 
+      // Nabbing the mode of the OpenID request, if any
       $OpenIDMode = GetValue('openid_mode', $RequestGet);
 
       // Are we receiving an authentication result?

@@ -3,7 +3,10 @@
 class SteamProfileModel extends Gdn_Model {
 
    /**
-    
+    * Checks the local Steam Profile cache for existing user profile
+    * information.  If found, serve it up.  If not found, attempt to fetch
+    * it from the Steam Community website.
+    *
     * @param string $SteamID A sixty-four bit integer representing the target Steam ID
     * @return mixed SimpleXMLElement on success, FALSE on failure
     */
