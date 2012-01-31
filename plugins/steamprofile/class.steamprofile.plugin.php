@@ -49,22 +49,19 @@ class SteamProfilePlugin extends Gdn_Plugin {
     * 
     * @param array $OpenIDParameters The GET parameters from the is_res submission
     */
-   private function CheckAuthentication($OpenIDParameters) {
-      // Grabbing the $_GET array, processed by our framework
-      $RequestGet = Gdn::Request()->Get();
-
+   private function CheckAuthentication($OpenIDRequest) {
       // PHP replaces dots (.) with underscores on incoming variables.  We have to add them back.
       $OpenIDParameters = array();
-      $OpenIDParameters['openid.assoc_handle'] = GetValue('openid_assoc_handle', $RequestGet, '');
-      $OpenIDParameters['openid.claimed_id'] = GetValue('openid_claimed_id', $RequestGet, '');
-      $OpenIDParameters['openid.identity'] = GetValue('openid_identity', $RequestGet, '');
+      $OpenIDParameters['openid.assoc_handle'] = GetValue('openid_assoc_handle', $OpenIDRequest, '');
+      $OpenIDParameters['openid.claimed_id'] = GetValue('openid_claimed_id', $OpenIDRequest, '');
+      $OpenIDParameters['openid.identity'] = GetValue('openid_identity', $OpenIDRequest, '');
       $OpenIDParameters['openid.mode'] = 'check_authentication';
-      $OpenIDParameters['openid.ns'] = GetValue('openid_ns', $RequestGet, '');
-      $OpenIDParameters['openid.op_endpoint'] = GetValue('openid_op_endpoint', $RequestGet, '');
-      $OpenIDParameters['openid.response_nonce'] = GetValue('openid_response_nonce', $RequestGet, '');
-      $OpenIDParameters['openid.return_to'] = GetValue('openid_return_to', $RequestGet, '');
-      $OpenIDParameters['openid.sig'] = GetValue('openid_sig', $RequestGet, '');
-      $OpenIDParameters['openid.signed'] = GetValue('openid_signed', $RequestGet, '');
+      $OpenIDParameters['openid.ns'] = GetValue('openid_ns', $OpenIDRequest, '');
+      $OpenIDParameters['openid.op_endpoint'] = GetValue('openid_op_endpoint', $OpenIDRequest, '');
+      $OpenIDParameters['openid.response_nonce'] = GetValue('openid_response_nonce', $OpenIDRequest, '');
+      $OpenIDParameters['openid.return_to'] = GetValue('openid_return_to', $OpenIDRequest, '');
+      $OpenIDParameters['openid.sig'] = GetValue('openid_sig', $OpenIDRequest, '');
+      $OpenIDParameters['openid.signed'] = GetValue('openid_signed', $OpenIDRequest, '');
 
       // Loading up all of our previously collected values into an array and sending them off for verificiation
       $CheckAuthResult = file_get_contents(self::SteamOpenIDAuth.'?'.http_build_query($OpenIDParameters));
@@ -77,10 +74,10 @@ class SteamProfilePlugin extends Gdn_Plugin {
             'SteamID64',
             str_replace(self::SteamOpenIDClaimedID, '', $OpenIDParameters['openid.claimed_id'])
          );
-         $this->_SteamProfileNotification(T('Successfully linked your Steam profile'), 'Dismissable');
+         return TRUE;
       } else {
-         // If not, we just throw out a generic "invalid attempt" error
-         $this->_SteamProfileNotification(T('Invalid Steam authentication attempt'), 'Dismissable');
+         // Otherwise, indicate an invalid attempt
+         return FALSE;
       }
    }
 
@@ -99,7 +96,14 @@ class SteamProfilePlugin extends Gdn_Plugin {
 
       // Are we receiving an authentication result?
       if ($OpenIDMode == 'id_res') {
-         $this->CheckAuthentication();
+         // Is the quthentication valid?
+         if ($this->CheckAuthentication($RequestGet)) {
+            // If so, alert the user of the successful linking
+            $this->_SteamProfileNotification(T('Successfully linked your Steam profile'), 'Dismissable');
+         } else {
+            // If not, we just throw out an "invalid attempt" error
+            $this->_SteamProfileNotification(T('Invalid Steam authentication attempt'), 'Dismissable');
+         }
       } elseif ($OpenIDMode == 'error') { // Are we receiving an arror?
          // Notify the user
          $this->_SteamProfileNotification(T('Unable to link your Steam profile').': '.GetValue('openid_error', $RequestGet));
