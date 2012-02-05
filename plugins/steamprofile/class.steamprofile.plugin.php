@@ -9,7 +9,7 @@ $PluginInfo['steamprofile'] = array(
    'HasLocale' => FALSE,
    'MobileFriendly' => TRUE,
    'Name' => 'Steam Profile',
-   'PluginUrl' => 'http://initvector.com',
+   'PluginUrl' => 'https://github.com/initvector/VanillaAddons',
    'RegisterPermissions' => array(),
    'RequiredApplications' => array('Vanilla' => '2.0.18'),
    'RequiredPlugins' => FALSE,
